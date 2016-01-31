@@ -1,0 +1,12 @@
+#toogle{width: 30px;height: 30px;background: #000;position: absolute;top: 0;right: 0;cursor: pointer;z-index: 21;}
+#userSuccess{width: 30px;height: 30px;background: #d00;position: absolute;top: 0;right: 40px;cursor: pointer;z-index: 21;}
+.desk{width: 100%;height: 100%;background: #fee;position: absolute;top: 20px;left: 20px;}
+.table{display: table;}
+.map.table{border: 0px solid #000;background: #fff}
+.map .cell1{background: #d00}
+.row{display: table-row;}
+.cell{display: table-cell;width: 20px;height: 20px;color: #fff;line-height: 20px;font-size: 12px;text-align: center;vertical-align: middle;}
+.cell0{background: #fff}
+.cell1{background: #000}
+.cell1fff{background: #fff!important}
+.piece{cursor: pointer;position: absolute;top: 100px;z-index: 11;}
