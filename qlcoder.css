@@ -10,3 +10,4 @@
 .cell1{background: #000}
 .cell1fff{background: #fff!important}
 .piece{cursor: pointer;position: absolute;top: 100px;z-index: 11;}
+#tmp-map{background: #fff;margin: 0 auto;}

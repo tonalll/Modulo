@@ -86,8 +86,17 @@ function $callback() {
     modulo.$body.append('<div id="toogle"></div>');
     modulo.$body.append('<div id="userSuccess"></div>');
 
+
     var $desk = $('.desk');
     var $map = $desk.find('.map');
+    $desk.append('<div class="tmp-map"></div>');
+    var length = modulo.data.map.length * modulo.cellWidth;
+    $('.tmp-map').css({
+        height: length,
+        width: length,
+        marginLeft: 3 * length,
+        marginTop: 2 * length
+    });
     $('#toogle').on({
         click: function () {
             if ($desk.is(':visible')) $desk.hide();
@@ -101,6 +110,7 @@ function $callback() {
     });
     //    console.info(modulo.data.map);
     //    创建静态原始地图
+
     $.each(modulo.data.map, function (index, value) {
         var $row = $map.append('<div class="row"></div>').find('.row:last');
         var str = this;
