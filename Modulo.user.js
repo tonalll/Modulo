@@ -17,280 +17,270 @@ document.body.onselectstart = "return false";
 //console.info(123);
 
 
-var $url = 'http://apps.bdimg.com/libs/jquery/1.11.3/jquery.min.js';
-createScript($url, $callback);
-createStyle('http://localhost/frame/qlcoder/qlcoder.css');
 
-top.topModulo = {};
-modulo = top.topModulo;
-//   创建相关对象
-modulo.$body;
-modulo.data;
-modulo.level;
-modulo.modu;
-modulo.timer;
-modulo.time = 2000;
-//地图原点坐标相对屏幕原点偏移
-modulo.position = 20;
-modulo.answer = '';
-//碎片区块初始间隔
-modulo.pieces = {};
-modulo.pieces.width = 20;
-//碎片区块初始y坐标
-modulo.pieces.height = 100;
-modulo.maxWidth;
-modulo.maxHeight;
-//z轴索引
-modulo.zIndex = 11;
-//碎片大小
-modulo.cellWidth = 20;
+var modulo = {
+    //    初始化
+    init: function () {
+        createStyle('http://localhost/frame/qlcoder/qlcoder.css');
+        top.topModulo = modulo;
 
-modulo.userSuccess = function () {
-    var success = false;
-    modulo.answer = '';
-    //    if ($('.cell1:contains(0)').length == $('.cell1').length) success = true;
-    success = true;
-    if (success) {
-        $('.piece').each(function () {
-            var $this = $(this);
-            var offset = $this.offset();
-            modulo.answer += (offset.top - modulo.position) / modulo.cellWidth + '' + (offset.left - modulo.position) / modulo.cellWidth;
-        });
-        console.info(modulo.answer);
-        $('#solution').val(modulo.answer);
-        //            把答案写入本地
-        localStorage['level' + modulo.level] = modulo.answer;
-    }
-}
-
-//----------------$callback
-function $callback() {
-    //    console.info('jquery is ready!');
-
-    /*
-猎取相关数据
-创建坐标碎片
-碎片属性 坐标 value 基础value
-拖动后 更新属性
-    */
-
-    modulo.$body = $('body');
-
-    var str = modulo.$body.text();
-    str = str.slice(str.indexOf('{'), str.indexOf('}') + 1);
-    modulo.data = $.parseJSON(str);
-    modulo.level = modulo.data.level;
-    modulo.modu = modulo.data.modu;
-    //    创建容器
-    modulo.$body.append('<div class="desk"><div class="map table"></div></div>');
-    modulo.$body.append('<div id="toogle"></div>');
-    modulo.$body.append('<div id="userSuccess"></div>');
+        //        常量、数据初始化
+        this.$dom.$body = $('body');
+        var str = this.$dom.$body.text();
+        str = str.slice(str.indexOf('{"'), str.indexOf(']}') + 2);
+        this.info.data = $.parseJSON(str);
+        this.info.level = this.info.data.level;
+        this.info.modu = this.info.data.modu;
+        //        基础dom初始化
+        //    创建容器
+        this.$dom.$body.append('<div class="zty-desk"><div class="zty-map zty-table"></div></div>');
+        this.$dom.$body.append('<div id="zty-toogle"></div>');
+        this.$dom.$body.append('<div id="zty-userSuccess"></div>');
+        this.$dom.$desk = $('.zty-desk');
+        this.$dom.$map = this.$dom.$desk.find('.zty-map');
+        this.$dom.$desk.append('<div class="zty-tmp-map"></div>');
+        var length = this.info.data.map.length * this.const.cellWidth;
 
 
-    var $desk = $('.desk');
-    var $map = $desk.find('.map');
-    $desk.append('<div class="tmp-map"></div>');
-    var length = modulo.data.map.length * modulo.cellWidth;
-    $('.tmp-map').css({
-        height: length,
-        width: length,
-        marginLeft: 3 * length,
-        marginTop: 2 * length
-    });
-    $('#toogle').on({
-        click: function () {
-            if ($desk.is(':visible')) $desk.hide();
-            else $desk.show();
-        }
-    });
-    $('#userSuccess').on({
-        click: function () {
-            modulo.userSuccess()
-        }
-    });
-    //    console.info(modulo.data.map);
-    //    创建静态原始地图
 
-    $.each(modulo.data.map, function (index, value) {
-        var $row = $map.append('<div class="row"></div>').find('.row:last');
-        var str = this;
-        for (var i = 0; i < str.length; i++) {
-            //            console.info(str.charAt(i));
-            var $cell = $row.append('<div class="cell"></div>').find('.cell:last');
-            if (str.charAt(i) != '0') $cell.text(str.charAt(i)).addClass('cell1');
-            $cell.attr({
-                coordinate: 'x' + i + 'y' + index,
-                baseValue: str.charAt(i),
-                value: str.charAt(i)
-            });
-            //            console.info(modulo.map['x' + i + 'y' + index]);
-        }
+        //    创建静态原始地图
 
-    });
-    //    创建碎片
-    $.each(modulo.data.pieces, function (index, value) {
-        //        创建每一块
-        var rootIndex = index;
-        var $piece = $desk.append('<div class="piece table"></div>').find('.piece:last');
-        var str = this;
-        var arr = str.split(',');
-        //        列宽
-        var max = 0;
-        //        console.info(arr);
-        $.each(arr, function (index, value) {
-            //            console.info(arr);
-            //            console.info(this.length);
-            if (this.length > max) max = this.length;
-        });
-        //        console.info(max + '----');
-        var positon = $piece.position();
-        //        console.info(positon);
-        //        console.info(modulo.pieces.width);
-        //        console.info(modulo.pieces.width, $piece.width());
-        //        console.info(modulo.pieces.width, $piece.width(), modulo.cellWidth);
-        if (positon.left < modulo.pieces.width) {
-            $piece.css({
-                left: modulo.pieces.width + $piece.width() + modulo.cellWidth
-            });
-        }
-        $.each(arr, function (index, value) {
-            //        创建每一行
-            var $row = $piece.append('<div class="row"></div>').find('.row:last');
-            //            创建每一个
+        $.each(modulo.info.data.map, function (index, value) {
+            var $row = modulo.$dom.$map.append('<div class="zty-row"></div>').find('.zty-row:last');
             var str = this;
-            for (var i = 0; i < max; i++) {
-                var $cell = $row.append('<div class="cell"></div>').find('.cell:last');
-                var x = ($cell.offset().left - modulo.position) / modulo.cellWidth;
-                var y = ($cell.offset().top - modulo.position) / modulo.cellWidth;
-                var value = 0;
-                if (str.charAt(i) == 'X') {
-                    $cell.addClass('cell1').text('1');
-                    value = 1;
-                    $cell.text(value);
-                }
+            for (var i = 0; i < str.length; i++) {
+                //            console.info(str.charAt(i));
+                var $cell = $row.append('<div class="zty-cell"></div>').find('.zty-cell:last');
+                if (str.charAt(i) != '0') $cell.text(str.charAt(i)).addClass('zty-cell1');
                 $cell.attr({
-                    coordinate: 'x' + x + 'y' + y,
-                    baseValue: value,
-                    value: value,
+                    coordinate: 'x' + i + 'y' + index,
+                    baseValue: str.charAt(i),
+                    value: str.charAt(i)
                 });
+                //            console.info(modulo.map['x' + i + 'y' + index]);
+            }
+
+        });
+
+
+        //    创建碎片
+        $.each(modulo.info.data.pieces, function (index, value) {
+            //        创建每一块
+            var rootIndex = index;
+            var $piece = modulo.$dom.$desk.append('<div class="zty-piece zty-table"></div>').find('.zty-piece:last');
+            var str = this;
+            var arr = str.split(',');
+            //        列宽
+            var max = 0;
+            //        console.info(arr);
+            $.each(arr, function (index, value) {
+                //            console.info(arr);
+                //                            console.info(this.length);
+                if (this.length > max) max = this.length;
+            });
+            //        console.info(max + '----');
+            var positon = $piece.position();
+
+            $.each(arr, function (index, value) {
+                //        创建每一行
+                var $row = $piece.append('<div class="zty-row"></div>').find('.zty-row:last');
+                //            创建每一个
+                var str = this;
+                for (var i = 0; i < max; i++) {
+                    var $cell = $row.append('<div class="zty-cell"></div>').find('.zty-cell:last');
+                    var x = ($cell.offset().left - modulo.const.position) / modulo.const.cellWidth;
+                    var y = ($cell.offset().top - modulo.const.position) / modulo.const.cellWidth;
+                    var value = 0;
+                    if (str.charAt(i) == 'X') {
+                        $cell.addClass('zty-cell1').text('1');
+                        value = 1;
+                        $cell.text(value);
+                    }
+                    console.info(x,y);
+                    $cell.attr({
+                        coordinate: 'x' + x + 'y' + y,
+                        baseValue: value,
+                        value: value,
+                    });
+                }
+            });
+            setTimeout(function () {
+
+                //                console.info(modulo.pieces);
+                //                console.info($piece.width());
+                if (positon.left < modulo.pieces.width) {
+                    $piece.css({
+                        left: modulo.pieces.width + $piece.width() + modulo.const.cellWidth
+                    });
+                }
+                modulo.pieces.width += $piece.width() + modulo.const.cellWidth + 40;
+            }, 100);
+        });
+
+        $('.zty-tmp-map').css({
+            height: length,
+            width: length,
+            marginLeft: 3 * length,
+            marginTop: 2 * length
+        });
+        $('#zty-toogle').on({
+            click: function () {
+                if ($desk.is(':visible')) $desk.hide();
+                else $desk.show();
             }
         });
-        modulo.pieces.width += $piece.width() + modulo.cellWidth;
-    });
-    //            拖动
-    var $piece,
-        dragging = false,
-        oX = 0,
-        oY = 0;
-    $(document).on({
-        mouseup: function () {
-            if (dragging) dragOver();
+        $('#zty-userSuccess').on({
+            click: function () {
+                this.userSuccess();
+            }
+        });
+
+        modulo.functions.drag();
+
+    },
+    //    常量
+    const: {
+        timer: '',
+        time: 2000,
+        //地图原点坐标相对屏幕原点偏移
+        position: 20,
+        answer: '',
+        zIndex: 11,
+        cellWidth: 20,
+        dragging: false,
+    },
+    //    jquery对象
+    $dom: {
+        $body: {},
+        $desk: {},
+        $map: {},
+    },
+    info: {
+        data: '',
+        level: '',
+        modu: '',
+    },
+    pieces: {
+        //碎片区块初始间隔
+        width: 20,
+        //碎片区块初始y坐标
+        height: 100,
+    },
+    tmp: {
+        $piece: {},
+    },
+    functions: {
+        drag: function () {
+            //        拖动
+            var oX = 0,
+                oY = 0;
+            $(document).on({
+                mouseup: function () {
+                    if (modulo.const.dragging) modulo.functions.dragOver();
+                },
+                mousemove: function (e) {
+                    if (modulo.const.dragging) {
+                        modulo.tmp.$piece.css({
+                            top: e.clientY - oY + modulo.const.position,
+                            left: e.clientX - oX + modulo.const.position
+                        });
+                    }
+                }
+            });
+            $('.zty-piece').each(function () {
+                var $this = $(this);
+                $this.on({
+                    mousedown: function (e) {
+                        modulo.tmp.$piece = $this;
+                        modulo.const.dragging = true;
+                        oX = e.clientX - modulo.tmp.$piece.position().left + modulo.const.position;
+                        oY = e.clientY - modulo.tmp.$piece.position().top + modulo.const.position;
+                        modulo.const.zIndex += 1;
+                        $this.css({
+                            zIndex: modulo.const.zIndex
+                        });
+                    }
+                });
+            });
         },
-        mousemove: function (e) {
-            if (dragging) {
-                $piece.css({
-                    top: e.clientY - oY + modulo.position,
-                    left: e.clientX - oX + modulo.position
-                });
-            }
-        }
-    });
-    $('.piece').each(function () {
-        var $this = $(this);
-        $this.on({
-            mousedown: function (e) {
-                $piece = $this;
-                dragging = true;
-                oX = e.clientX - $piece.position().left + modulo.position;
-                oY = e.clientY - $piece.position().top + modulo.position;
-                modulo.zIndex += 1;
-                $this.css({
-                    zIndex: modulo.zIndex
-                });
-            }
-        });
-    });
-
-    function dragOver() {
-        dragging = false;
-        var offset = $piece.offset();
-        //        console.info(offset.left);
-        $piece.css({
-            top: Math.floor((offset.top - modulo.position) / modulo.cellWidth) * modulo.cellWidth,
-            left: Math.floor((offset.left - modulo.position) / modulo.cellWidth) * modulo.cellWidth
-        });
-        //        更新用户地图
-        $piece.find('.cell1').each(function (index, element) {
-            var $this = $(this);
-            //            猎取新坐标
-            //            老坐标处所有碎片数据更新 value text class
-            //            新坐标处所有碎片数据更新 value text class
-            //            更新新坐标
-            var x = ($this.offset().left - modulo.position) / modulo.cellWidth;
-            var y = ($this.offset().top - modulo.position) / modulo.cellWidth;
-            var value = $this.attr('value');
-            var oldCoordinate = $this.attr('coordinate');
-            var oldValue = value == $this.attr('baseValue') ? value : $this.attr('value') - $this.attr('baseValue');
-            var oldText = oldValue % modulo.modu;
-            var newCoordinate = 'x' + x + 'y' + y;
-            var newValue = $('.cell1[coordinate=' + newCoordinate + ']').not($this).eq(0).attr('value') || 0;
-            newValue = +newValue + (+$this.attr('baseValue'));
-            //            console.info($('.cell1[coordinate=' + newCoordinate + ']').not($this).eq(0).attr('value') || 0);
-            //            console.info((+$this.attr('baseValue')));
-            //            console.info('----------');
-            //            console.info($('.cell1[coordinate=' + newCoordinate + ']').not($this).eq(0).attr('value') || 0+'--------');
-            //            console.info(newValue);
-            var newText = newValue % modulo.modu;
-            $('.cell1[coordinate=' + oldCoordinate + ']').each(function () {
+        dragOver: function () {
+            modulo.const.dragging = false;
+            var offset = modulo.tmp.$piece.offset();
+            //        console.info(offset.left);
+            modulo.tmp.$piece.css({
+                top: Math.floor((offset.top - modulo.const.position) / modulo.const.cellWidth) * modulo.const.cellWidth,
+                left: Math.floor((offset.left - modulo.const.position) / modulo.const.cellWidth) * modulo.const.cellWidth
+            });
+            //        更新用户地图
+            modulo.tmp.$piece.find('.zty-cell1').each(function (index, element) {
                 var $this = $(this);
-                $this.text(oldText).attr({
-                    value: oldValue
+                //            猎取新坐标
+                //            老坐标处所有碎片数据更新 value text class
+                //            新坐标处所有碎片数据更新 value text class
+                //            更新新坐标
+                var x = ($this.offset().left - modulo.const.position) / modulo.const.cellWidth;
+                var y = ($this.offset().top - modulo.const.position) / modulo.const.cellWidth;
+                var value = $this.attr('value');
+                var oldCoordinate = $this.attr('coordinate');
+                var oldValue = value == $this.attr('baseValue') ? value : $this.attr('value') - $this.attr('baseValue');
+                var oldText = oldValue % modulo.info.modu;
+                var newCoordinate = 'x' + x + 'y' + y;
+//                console.info(oldCoordinate, newCoordinate);
+                if (oldCoordinate == newCoordinate) return;
+                var newValue = $('.zty-cell1[coordinate="' + newCoordinate + '"]').not($this).eq(0).attr('value') || 0;
+                console.info(newCoordinate);
+                console.info($('.zty-cell1[coordinate=' + newCoordinate + ']'));
+                newValue = +newValue + (+$this.attr('baseValue'));
+                //            console.info($('.zty-cell1[coordinate=' + newCoordinate + ']').not($this).eq(0).attr('value') || 0);
+                //            console.info((+$this.attr('baseValue')));
+                //            console.info('----------');
+                //            console.info($('.zty-cell1[coordinate=' + newCoordinate + ']').not($this).eq(0).attr('value') || 0+'--------');
+                //            console.info(newValue);
+//                console.info(oldCoordinate, newCoordinate);
+                var newText = newValue % modulo.info.modu;
+                $('.zty-cell1[coordinate="' + oldCoordinate + '"]').each(function () {
+                    var $this = $(this);
+                    $this.text(oldText).attr({
+                        value: oldValue
+                    });
+                    if (oldText % modulo.info.modu == 0) $this.addClass('zty-cell1fff');
+                    else $this.removeClass('zty-cell1fff');
                 });
-                if (oldText % modulo.modu == 0) $this.addClass('cell1fff');
-                else $this.removeClass('cell1fff');
-            });
-            $this.attr({
-                coordinate: newCoordinate
-            });
-
-            $('.cell1[coordinate=' + newCoordinate + ']').each(function () {
-                var $this = $(this);
-                $(this).text(newText).attr({
-                    value: newValue
+                $this.attr({
+                    coordinate: newCoordinate
                 });
-                if (newText % modulo.modu == 0) $this.addClass('cell1fff');
-                else $this.removeClass('cell1fff');
-            });
-            //-----------------------------------
 
-        });
-        //        判断是否成功
-        clearTimeout(modulo.timer);
-        modulo.timer = setTimeout(function () {
-            isSuccess();
-        }, modulo.time);
-    }
+                $('.zty-cell1[coordinate=' + newCoordinate + ']').each(function () {
+                    var $this = $(this);
+                    $(this).text(newText).attr({
+                        value: newValue
+                    });
+                    if (newText % modulo.info.modu == 0) $this.addClass('zty-cell1fff');
+                    else $this.removeClass('zty-cell1fff');
+                });
+                //-----------------------------------
 
-    function isSuccess() {
-        var success = false;
-        modulo.answer = '';
-        if ($('.cell1:contains(0)').length == $('.cell1').length) success = true;
-        if (success) {
-            $('.piece').each(function () {
-                var $this = $(this);
-                var offset = $this.offset();
-                modulo.answer += (offset.top - modulo.position) / modulo.cellWidth + '' + (offset.left - modulo.position) / modulo.cellWidth;
             });
-            console.info(modulo.answer);
-            $('#solution').val(modulo.answer);
-            //            把答案写入本地
-            localStorage['level' + modulo.level] = modulo.answer;
+            //        判断是否成功
+            clearTimeout(modulo.const.timer);
+            modulo.const.timer = setTimeout(function () {
+                //                isSuccess();
+            }, modulo.const.time);
         }
     }
+};
 
-}
-//----------------$callback
 
+
+$(document).ready(function () {
+    modulo.init();
+    //    //    清除原有样式
+    //        $('link').remove();
+    //    createStyle('http://localhost/frame/qlcoder/qlcoder.css');
+    //    setTimeout(function () {
+    //        xilang();
+    //    }, 1000);
+});
 
 function createScript(_url, _callback) {
     var script = document.createElement('script');
